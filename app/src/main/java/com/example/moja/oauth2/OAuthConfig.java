@@ -1,5 +1,7 @@
 package com.example.moja.oauth2;
 
+import com.example.moja.oauth2.credentials.CredentialsStore;
+
 import java.net.URI;
 import java.util.List;
 
@@ -10,14 +12,15 @@ import java.util.List;
 public class OAuthConfig {
     private List<String> scopes;
     private URI tokenUri;
-    private Integer requestTiemOut;
+    private Integer timeout;
     private String clientID;
     private String clientSecret;
+    private CredentialsStore credentialsStore;
 
-    public OAuthConfig(List<String> scopes, URI tokenUri, Integer requestTiemOut, String clientID, String clientSecret) {
+    public OAuthConfig(List<String> scopes, URI tokenUri, Integer timeout, String clientID, String clientSecret) {
         this.scopes = scopes;
         this.tokenUri = tokenUri;
-        this.requestTiemOut = requestTiemOut;
+        this.timeout = timeout;
         this.clientID = clientID;
         this.clientSecret = clientSecret;
     }
@@ -38,12 +41,12 @@ public class OAuthConfig {
         this.tokenUri = tokenUri;
     }
 
-    public Integer getRequestTiemOut() {
-        return requestTiemOut;
+    public Integer getTimeout() {
+        return timeout;
     }
 
-    public void setRequestTiemOut(Integer requestTiemOut) {
-        this.requestTiemOut = requestTiemOut;
+    public void setTimeout(Integer timeout) {
+        this.timeout = timeout;
     }
 
     public String getClientID() {
@@ -60,5 +63,13 @@ public class OAuthConfig {
 
     public void setClientSecret(String clientSecret) {
         this.clientSecret = clientSecret;
+    }
+
+    public CredentialsStore getCredentialsStore() {
+        return credentialsStore;
+    }
+
+    public void setCredentialsStore(CredentialsStore credentialsStore) {
+        this.credentialsStore = credentialsStore;
     }
 }

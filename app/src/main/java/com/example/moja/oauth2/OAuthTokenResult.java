@@ -7,13 +7,14 @@ package com.example.moja.oauth2;
 public class OAuthTokenResult {
     private String accessToken;
     private String refreshToken;
-    private int expiresIn;
-
+    private double expiresIn;
+    private int timestamp;
 
     public OAuthTokenResult(String accessToken, String refreshToken, int expiresIn) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
         this.expiresIn = expiresIn;
+        timestamp = (int) System.currentTimeMillis() / 1000;
     }
 
     public String getAccessToken() {
@@ -32,11 +33,19 @@ public class OAuthTokenResult {
         this.refreshToken = refreshToken;
     }
 
-    public int getExpiresIn() {
+    public double getExpiresIn() {
         return expiresIn;
     }
 
-    public void setExpiresIn(int expiresIn) {
+    public void setExpiresIn(double expiresIn) {
         this.expiresIn = expiresIn;
+    }
+
+    public int getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(int timestamp) {
+        this.timestamp = timestamp;
     }
 }

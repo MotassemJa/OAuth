@@ -2,6 +2,9 @@ package com.example.moja.oauth2;
 
 import android.util.Base64;
 
+import com.example.moja.oauth2.credentials.Credentials;
+import com.example.moja.oauth2.credentials.CredentialsStore;
+import com.example.moja.oauth2.credentials.InMemoryCredentialsStore;
 import com.example.moja.oauth2.exceptions.OAuthException;
 import com.example.moja.oauth2.exceptions.OAuthExceptionManager;
 import com.example.moja.oauth2.exceptions.OAuthExceptionReason;
@@ -39,11 +42,43 @@ public class OAuthClient {
     private OAuthConfig oAuthConfig;
     private OkHttpClient okHttpClient = new OkHttpClient();
 
+    public OAuthConfig getoAuthConfig() {
+        return oAuthConfig;
+    }
+
+    public void setoAuthConfig(OAuthConfig oAuthConfig) {
+        this.oAuthConfig = oAuthConfig;
+    }
+
+    public OkHttpClient getOkHttpClient() {
+        return okHttpClient;
+    }
+
+    public void setOkHttpClient(OkHttpClient okHttpClient) {
+        this.okHttpClient = okHttpClient;
+    }
+
+    public CredentialsStore getCredentialsStore() {
+        return mCredentialsStore;
+    }
+
+    public void setCredentialsStore(CredentialsStore mCredentialsStore) {
+        this.mCredentialsStore = mCredentialsStore;
+    }
+
+    private CredentialsStore mCredentialsStore;
+
     private static final String JSON_MEDIA_TYPE = "application/json; charset=utf-8";
     public static final MediaType JSON = MediaType.parse(JSON_MEDIA_TYPE);
 
     public OAuthClient(OAuthConfig oAuthConfig) {
         this.oAuthConfig = oAuthConfig;
+        if (oAuthConfig.getCredentialsStore() != null) {
+            mCredentialsStore = oAuthConfig.getCredentialsStore();
+        }
+        else {
+            mCredentialsStore = new InMemoryCredentialsStore();
+        }
     }
 
     public void requestOAuthTokenWithUsername(String username, String password, OAuthCallback callback) {
@@ -120,6 +155,7 @@ public class OAuthClient {
         JSONObject jsonObject = new JSONObject(data);
         String accessToken = jsonObject.getString("access_token");
         String refreshToken = jsonObject.getString("refresh_token");
+        mCredentialsStore.storeCredentials(new Credentials(refreshToken));
         int expiresIn = jsonObject.getInt("expires_in");
 
         return new OAuthTokenResult(accessToken, refreshToken, expiresIn);
