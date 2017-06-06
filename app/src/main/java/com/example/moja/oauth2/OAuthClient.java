@@ -75,53 +75,55 @@ public class OAuthClient {
         this.oAuthConfig = oAuthConfig;
         if (oAuthConfig.getCredentialsStore() != null) {
             mCredentialsStore = oAuthConfig.getCredentialsStore();
-        }
-        else {
+        } else {
             mCredentialsStore = new InMemoryCredentialsStore();
         }
     }
 
     public void requestOAuthTokenWithUsername(String username, String password, OAuthCallback callback) {
-        String bodyString = "grant_type=password&username=" + username + "&password=" + password;
-        requestOAuthTokenWithBody(bodyString, callback);
+        FormBody.Builder formBuilder = new FormBody.Builder();
+        formBuilder.add("grant_type", "password");
+        formBuilder.add("username", username);
+        formBuilder.add("password", password);
+        requestOAuthTokenWithBody(formBuilder, callback);
     }
 
     public void requestOAuthToken(OAuthCallback callback) {
-        String bodyString = "grant_type=client_credentials";
-        requestOAuthTokenWithBody(bodyString, callback);
+        FormBody.Builder formBuilder = new FormBody.Builder();
+        formBuilder.add("grant_type", "client_credentials");
+        requestOAuthTokenWithBody(formBuilder, callback);
     }
 
     public void requestOAuthTokenWithRefreshToken(String refreshToken, OAuthCallback callback) {
-        String bodyString = "grant_type=refresh_token&refresh_token=" + refreshToken;
-        requestOAuthTokenWithBody(bodyString, callback);
+        FormBody.Builder formBuilder = new FormBody.Builder();
+        formBuilder.add("grant_type", "refresh_token");
+        formBuilder.add("refresh_token", refreshToken);
+        requestOAuthTokenWithBody(formBuilder, callback);
     }
 
-    private void requestOAuthTokenWithBody(String body, final OAuthCallback callback) {
+    private void requestOAuthTokenWithBody(FormBody.Builder body, final OAuthCallback callback) {
         String authHeader = createAuthorizationHeader();
-        Map<String, String> headerValues = new HashMap<>();
-        headerValues.put("Authorization", authHeader);
-        headerValues.put("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-        headerValues.put("Accept", "application/json");
+        body.add("Authorization", authHeader);
+        body.add("client_id", oAuthConfig.getClientID());
+        body.add("client_secret", oAuthConfig.getClientSecret());
 
         try {
-            String rBody = body;
             List<String> scopes = oAuthConfig.getScopes();
             if (!scopes.isEmpty()) {
                 String scopeBody = "";
                 for (String s : scopes) {
                     scopeBody += s + ":";
                 }
-                rBody += "&scope=";
-                rBody += scopeBody;
+                body.add("scope", scopeBody);
             }
 
-            RequestBody requestBody = RequestBody.create(JSON, rBody);
-            Headers headers = Headers.of(headerValues);
-            Request request = new Request.Builder()
-                    .url(oAuthConfig.getTokenUri().toURL())
-                    .post(requestBody)
-                    .headers(headers)
-                    .build();
+            Request.Builder requestBuilder = new Request.Builder();
+
+            requestBuilder.addHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
+                    .addHeader("Accept", "application/json");
+
+            RequestBody requestBody = body.build();
+            Request request = requestBuilder.url(oAuthConfig.getTokenUri().toURL()).post(requestBody).build();
 
             okHttpClient.newCall(request).enqueue(new Callback() {
                 @Override
@@ -134,7 +136,8 @@ public class OAuthClient {
                 public void onResponse(Call call, Response response) throws IOException {
                     if (response.isSuccessful()) {
                         try {
-                            parseResponseData(response.body().string());
+                            OAuthTokenResult token = parseResponseData(response.body().string());
+                            callback.onComplete(token, null);
                         } catch (Exception e) {
                             e.printStackTrace();
                             callback.onComplete(null, e);
@@ -163,7 +166,7 @@ public class OAuthClient {
 
     // TODO: CHANGE AFTER ANALYZING
     private OAuthException parseError(int errCode) {
-        OAuthException exception = new OAuthExceptionManager("Error: " + errCode, OAuthExceptionReason.REASON_BAD_RESPONSE);
+        OAuthException exception = new OAuthExceptionManager("Error: " + errCode, OAuthExceptionReason.REASON_SERVER_ERROR);
         return exception;
     }
 
@@ -171,7 +174,7 @@ public class OAuthClient {
         try {
             String authCredentials = URLEncoder.encode(oAuthConfig.getClientID() + ":" + oAuthConfig.getClientSecret(), "UTF-8");
             byte[] data = authCredentials.getBytes(StandardCharsets.UTF_8);
-            String base64 = Base64.encodeToString(data, Base64.DEFAULT);
+            String base64 = Base64.encodeToString(data, Base64.NO_WRAP);
             return "Base " + base64;
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();

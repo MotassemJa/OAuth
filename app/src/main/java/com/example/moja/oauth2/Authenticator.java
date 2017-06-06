@@ -1,5 +1,7 @@
 package com.example.moja.oauth2;
 
+import android.util.Log;
+
 import com.example.moja.oauth2.credentials.Credentials;
 import com.example.moja.oauth2.exceptions.OAuthException;
 import com.example.moja.oauth2.exceptions.OAuthExceptionManager;
@@ -34,6 +36,7 @@ public class Authenticator {
             @Override
             public void onComplete(OAuthTokenResult tokenResult, Exception e) {
                 if (e != null) {
+                    e.printStackTrace();
                     callback.onAuthenticationCompleted(false, e);
                 }
                 else {
@@ -49,7 +52,7 @@ public class Authenticator {
     }
 
     public void signOut() {
-        
+
     }
 
     public void retrieveAccessToken(final AccessTokenCallback callback) {
