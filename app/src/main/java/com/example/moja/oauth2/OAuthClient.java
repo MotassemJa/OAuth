@@ -16,19 +16,13 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.FormBody;
-import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
-import okhttp3.Response;
 
 /**
  * Created by moja on 02.06.2017.
@@ -40,16 +34,12 @@ public class OAuthClient {
     }
 
     private OAuthConfig oAuthConfig;
-    private OkHttpClient okHttpClient = new OkHttpClient();
 
     public CredentialsStore getCredentialsStore() {
         return mCredentialsStore;
     }
 
     private CredentialsStore mCredentialsStore;
-
-    private static final String JSON_MEDIA_TYPE = "application/json; charset=utf-8";
-    public static final MediaType JSON = MediaType.parse(JSON_MEDIA_TYPE);
 
     public OAuthClient(OAuthConfig oAuthConfig) {
         this.oAuthConfig = oAuthConfig;
@@ -82,20 +72,10 @@ public class OAuthClient {
     }
 
     private void requestOAuthTokenWithBody(FormBody.Builder body, final OAuthCallback callback) {
-        String authHeader = createAuthorizationHeader();
-        body.add("Authorization", authHeader);
-        body.add("client_id", oAuthConfig.getClientID());
-        body.add("client_secret", oAuthConfig.getClientSecret());
+        addBodyParams(body);
 
         try {
-            List<String> scopes = oAuthConfig.getScopes();
-            if (!scopes.isEmpty()) {
-                String scopeBody = "";
-                for (String s : scopes) {
-                    scopeBody += s + ":";
-                }
-                body.add("scope", scopeBody);
-            }
+            parseScopes(body);
 
             Request.Builder requestBuilder = new Request.Builder();
 
@@ -110,56 +90,33 @@ public class OAuthClient {
                 public void onComplete(OAuthTokenResult tokenResult, Exception e) {
                     if (e != null) {
                         callback.onComplete(null, e);
-                    }
-                    else {
-                        callback.onComplete(tokenResult, e);
+                    } else {
+                        callback.onComplete(tokenResult, null);
                     }
                 }
             }, mCredentialsStore).execute();
-
-//            okHttpClient.newCall(request).enqueue(new Callback() {
-//                @Override
-//                public void onFailure(Call call, IOException e) {
-//                    callback.onComplete(null, new OAuthExceptionManager(e, e.getMessage()
-//                            , OAuthExceptionReason.REASON_NETWORK_ERROR));
-//                }
-//
-//                @Override
-//                public void onResponse(Call call, Response response) throws IOException {
-//                    if (response.isSuccessful()) {
-//                        try {
-//                            OAuthTokenResult token = parseResponseData(response.body().string());
-//                            callback.onComplete(token, null);
-//                        } catch (Exception e) {
-//                            e.printStackTrace();
-//                            callback.onComplete(null, e);
-//                        }
-//                    } else {
-//                        callback.onComplete(null, parseError(response.code()));
-//                    }
-//                }
-//            });
-
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private OAuthTokenResult parseResponseData(String data) throws JSONException {
-        JSONObject jsonObject = new JSONObject(data);
-        String accessToken = jsonObject.getString("access_token");
-        String refreshToken = jsonObject.getString("refresh_token");
-        mCredentialsStore.storeCredentials(new Credentials(refreshToken));
-        int expiresIn = jsonObject.getInt("expires_in");
-
-        return new OAuthTokenResult(accessToken, refreshToken, expiresIn);
+    private void parseScopes(FormBody.Builder body) {
+        List<String> scopes = oAuthConfig.getScopes();
+        if (!scopes.isEmpty()) {
+            String scopeBody = "";
+            for (String s : scopes) {
+                scopeBody += s + ":";
+            }
+            body.add("scope", scopeBody);
+        }
     }
 
-    // TODO: CHANGE AFTER ANALYZING
-    private OAuthException parseError(int errCode) {
-        OAuthException exception = new OAuthExceptionManager("Error: " + errCode, OAuthExceptionReason.REASON_SERVER_ERROR);
-        return exception;
+    private void addBodyParams(FormBody.Builder body) {
+        String authHeader = createAuthorizationHeader();
+        body.add("Authorization", authHeader);
+        body.add("client_id", oAuthConfig.getClientID());
+        body.add("client_secret", oAuthConfig.getClientSecret());
     }
 
     private String createAuthorizationHeader() {
