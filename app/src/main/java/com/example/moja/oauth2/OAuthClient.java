@@ -105,28 +105,40 @@ public class OAuthClient {
             RequestBody requestBody = body.build();
             Request request = requestBuilder.url(oAuthConfig.getTokenUri().toURL()).post(requestBody).build();
 
-            okHttpClient.newCall(request).enqueue(new Callback() {
+            new RequestTask(request, new OAuthCallback() {
                 @Override
-                public void onFailure(Call call, IOException e) {
-                    callback.onComplete(null, new OAuthExceptionManager(e, e.getMessage()
-                            , OAuthExceptionReason.REASON_NETWORK_ERROR));
-                }
-
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    if (response.isSuccessful()) {
-                        try {
-                            OAuthTokenResult token = parseResponseData(response.body().string());
-                            callback.onComplete(token, null);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            callback.onComplete(null, e);
-                        }
-                    } else {
-                        callback.onComplete(null, parseError(response.code()));
+                public void onComplete(OAuthTokenResult tokenResult, Exception e) {
+                    if (e != null) {
+                        callback.onComplete(null, e);
+                    }
+                    else {
+                        callback.onComplete(tokenResult, e);
                     }
                 }
-            });
+            }, mCredentialsStore).execute();
+
+//            okHttpClient.newCall(request).enqueue(new Callback() {
+//                @Override
+//                public void onFailure(Call call, IOException e) {
+//                    callback.onComplete(null, new OAuthExceptionManager(e, e.getMessage()
+//                            , OAuthExceptionReason.REASON_NETWORK_ERROR));
+//                }
+//
+//                @Override
+//                public void onResponse(Call call, Response response) throws IOException {
+//                    if (response.isSuccessful()) {
+//                        try {
+//                            OAuthTokenResult token = parseResponseData(response.body().string());
+//                            callback.onComplete(token, null);
+//                        } catch (Exception e) {
+//                            e.printStackTrace();
+//                            callback.onComplete(null, e);
+//                        }
+//                    } else {
+//                        callback.onComplete(null, parseError(response.code()));
+//                    }
+//                }
+//            });
 
 
         } catch (IOException e) {
