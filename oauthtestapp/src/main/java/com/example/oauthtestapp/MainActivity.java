@@ -19,7 +19,6 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText mEtUsername, mEtPassword;
     private Button mBtnLogin;
-    private Button mBtnShow;
     private TextView mTvMsg;
 
     private static Authenticator mAuthenticator;
@@ -45,31 +44,6 @@ public class MainActivity extends AppCompatActivity {
                 login();
             }
         });
-        mBtnShow.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mAuthenticator.retrieveAccessToken(new Authenticator.AccessTokenCallback() {
-                    @Override
-                    public void onAccessTokenReceived(final String s, final Exception e) {
-                        if (e != null) {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mTvMsg.setText(e.getMessage());
-                                }
-                            });
-                        } else {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mTvMsg.setText(s);
-                                }
-                            });
-                        }
-                    }
-                });
-            }
-        });
     }
 
     private void login() {
@@ -81,6 +55,17 @@ public class MainActivity extends AppCompatActivity {
             public void onAuthenticationCompleted(boolean flag, final Exception e) {
                 if (flag) {
                     Toast.makeText(getApplicationContext(), "Success", Toast.LENGTH_SHORT).show();
+                    mAuthenticator.retrieveAccessToken(new Authenticator.AccessTokenCallback() {
+                        @Override
+                        public void onAccessTokenReceived(String s, Exception e) {
+                            if (e != null) {
+                                mTvMsg.setText(e.getMessage());
+                            }
+                            else {
+                                mTvMsg.setText(s);
+                            }
+                        }
+                    });
                 } else {
                     Toast.makeText(getApplicationContext(), "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
@@ -94,7 +79,6 @@ public class MainActivity extends AppCompatActivity {
         mEtUsername = (EditText) findViewById(R.id.et_username);
         mEtPassword = (EditText) findViewById(R.id.et_password);
         mBtnLogin = (Button) findViewById(R.id.btn_login);
-        mBtnShow = (Button) findViewById(R.id.btn_show);
         mTvMsg = (TextView) findViewById(R.id.tv_msg);
     }
 }
