@@ -1,6 +1,7 @@
 package com.example.moja.oauth2;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.example.moja.oauth2.credentials.Credentials;
 import com.example.moja.oauth2.credentials.CredentialsStore;
@@ -21,6 +22,10 @@ import okhttp3.Response;
  * Created by moja on 07.06.2017.
  */
 
+
+/**
+ * Use this task to send a response and trigger a callback.
+ */
 public class RequestTask extends AsyncTask<Void, Void, Response> {
 
     private Request mRequest;
@@ -60,11 +65,35 @@ public class RequestTask extends AsyncTask<Void, Void, Response> {
                 }
             }
         }
+        Log.e("ERR", "Code: " + response.code());
+        try {
+            Log.e("ERR", response.body().string());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         mAuthCallback.onComplete(null, parseError(response.code()));
     }
 
+    /**
+     * Parse the error code and get a corresponding OAuthException with the reason behind the error
+     * @param errCode
+     * @return
+     */
     private OAuthException parseError(int errCode) {
-        return new OAuthExceptionManager("Error: " + errCode, OAuthExceptionReason.REASON_SERVER_ERROR);
+        // TODO COMPLETE THIS METHOD
+        OAuthExceptionReason reason;
+        switch (errCode) {
+            case 400:
+                reason = OAuthExceptionReason.REASON_INVALID_REQUEST;
+                break;
+            case 401:
+                reason = OAuthExceptionReason.REASON_INVALID_GRANT;
+                break;
+            default:
+                reason = OAuthExceptionReason.REASON_SERVER_ERROR;
+                break;
+        }
+        return new OAuthExceptionManager("Error: " + errCode, reason);
     }
 
     private OAuthTokenResult parseResponseData(String data) throws JSONException {
