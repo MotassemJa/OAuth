@@ -50,6 +50,12 @@ public class OAuthClient {
         }
     }
 
+    /**
+     * Request OAuthToken with grant_type = password
+     * @param username
+     * @param password
+     * @param callback
+     */
     public void requestOAuthTokenWithUsername(String username, String password, OAuthCallback callback) {
         FormBody.Builder formBuilder = new FormBody.Builder();
         formBuilder.add("grant_type", "password");
@@ -58,12 +64,21 @@ public class OAuthClient {
         requestOAuthTokenWithBody(formBuilder, callback);
     }
 
+    /**
+     * Request OAuthToken with gran_type = client_credentials
+     * @param callback
+     */
     public void requestOAuthToken(OAuthCallback callback) {
         FormBody.Builder formBuilder = new FormBody.Builder();
         formBuilder.add("grant_type", "client_credentials");
         requestOAuthTokenWithBody(formBuilder, callback);
     }
 
+    /**
+     * Request OAuthToken with grant_type = refresh_token
+     * @param refreshToken
+     * @param callback
+     */
     public void requestOAuthTokenWithRefreshToken(String refreshToken, OAuthCallback callback) {
         FormBody.Builder formBuilder = new FormBody.Builder();
         formBuilder.add("grant_type", "refresh_token");
@@ -112,6 +127,10 @@ public class OAuthClient {
         }
     }
 
+    /**
+     * Specify required body parameters for the post request
+     * @param body FormBody.Builder
+     */
     private void addBodyParams(FormBody.Builder body) {
         String authHeader = createAuthorizationHeader();
         body.add("Authorization", authHeader);
@@ -119,6 +138,10 @@ public class OAuthClient {
         body.add("client_secret", oAuthConfig.getClientSecret());
     }
 
+    /**
+     * Prepare the authorization header to add it to request body
+     * @return String representing the authorization header value
+     */
     private String createAuthorizationHeader() {
         try {
             String authCredentials = URLEncoder.encode(oAuthConfig.getClientID() + ":" + oAuthConfig.getClientSecret(), "UTF-8");

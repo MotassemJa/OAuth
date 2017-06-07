@@ -96,6 +96,12 @@ public class RequestTask extends AsyncTask<Void, Void, Response> {
         return new OAuthExceptionManager("Error: " + errCode, reason);
     }
 
+    /**
+     * Parse the response which represents the token
+     * @param data String containing the json object
+     * @return OAuthTokenResult
+     * @throws JSONException
+     */
     private OAuthTokenResult parseResponseData(String data) throws JSONException {
         JSONObject jsonObject = new JSONObject(data);
         String accessToken = jsonObject.getString("access_token");
