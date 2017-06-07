@@ -14,7 +14,7 @@ public class OAuthTokenResult {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
         this.expiresIn = expiresIn;
-        timestamp = (int) System.currentTimeMillis() / 1000;
+        timestamp = (int) (System.currentTimeMillis() / 1000);
     }
 
     public String getAccessToken() {

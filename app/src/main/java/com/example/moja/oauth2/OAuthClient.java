@@ -42,28 +42,8 @@ public class OAuthClient {
     private OAuthConfig oAuthConfig;
     private OkHttpClient okHttpClient = new OkHttpClient();
 
-    public OAuthConfig getoAuthConfig() {
-        return oAuthConfig;
-    }
-
-    public void setoAuthConfig(OAuthConfig oAuthConfig) {
-        this.oAuthConfig = oAuthConfig;
-    }
-
-    public OkHttpClient getOkHttpClient() {
-        return okHttpClient;
-    }
-
-    public void setOkHttpClient(OkHttpClient okHttpClient) {
-        this.okHttpClient = okHttpClient;
-    }
-
     public CredentialsStore getCredentialsStore() {
         return mCredentialsStore;
-    }
-
-    public void setCredentialsStore(CredentialsStore mCredentialsStore) {
-        this.mCredentialsStore = mCredentialsStore;
     }
 
     private CredentialsStore mCredentialsStore;

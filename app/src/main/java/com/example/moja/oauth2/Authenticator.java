@@ -24,7 +24,7 @@ public class Authenticator {
 
     private OAuthConfig mConfig;
     private OAuthClient mClient;
-    private OAuthTokenResult mTokenResult;
+    private static OAuthTokenResult mTokenResult;
 
     public Authenticator(OAuthConfig config) {
         this.mConfig = config;
@@ -90,7 +90,8 @@ public class Authenticator {
             if (!mTokenResult.getAccessToken().isEmpty()) {
                 Calendar c = Calendar.getInstance();
                 int currentSeconds = c.get(Calendar.SECOND);
-                if (currentSeconds - mTokenResult.getTimestamp() < mTokenResult.getExpiresIn()) {
+                int time = (int) (System.currentTimeMillis() / 1000);
+                if (time - mTokenResult.getTimestamp() < mTokenResult.getExpiresIn()) {
                     return true;
                 }
             }

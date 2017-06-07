@@ -19,9 +19,10 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText mEtUsername, mEtPassword;
     private Button mBtnLogin;
+    private Button mBtnShow;
     private TextView mTvMsg;
 
-    private Authenticator mAuthenticator;
+    private static Authenticator mAuthenticator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +43,32 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 login();
+            }
+        });
+        mBtnShow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mAuthenticator.retrieveAccessToken(new Authenticator.AccessTokenCallback() {
+                    @Override
+                    public void onAccessTokenReceived(final String s, final Exception e) {
+                        if (e != null) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mTvMsg.setText(e.getMessage());
+                                }
+                            });
+                        }
+                        else {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mTvMsg.setText(s);
+                                }
+                            });
+                        }
+                    }
+                });
             }
         });
     }
@@ -71,12 +98,15 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+
     }
 
     private void grabAttributes() {
         mEtUsername = (EditText) findViewById(R.id.et_username);
         mEtPassword = (EditText) findViewById(R.id.et_password);
         mBtnLogin = (Button) findViewById(R.id.btn_login);
+        mBtnShow = (Button) findViewById(R.id.btn_show);
         mTvMsg = (TextView) findViewById(R.id.tv_msg);
     }
 }
